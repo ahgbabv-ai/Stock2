@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Upstox Pro - Fully Functional Trading Platform</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<!-- FontAwesome Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<!-- Google Fonts Inter -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body { font-family: 'Inter', sans-serif; background-color: #f8f9fa; color: #1a1a1a; }
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.upstox-purple { background-color: #532686; }
+.upstox-purple-text { color: #532686; }
+.upstox-light-purple { background-color: #f3ecfb; }
+</style>
+</head>
+<body class="max-w-md mx-auto bg-white min-h-screen flex flex-col relative shadow-2xl selection:bg-purple-200">
+​<!-- Top Demat Banner -->
+<div id="demat-banner" class="bg-[#f7f5f0] px-4 py-2.5 flex items-center justify-between border-b border-gray-200 text-xs cursor-pointer" onclick="openDematModal()">
+<div class="flex items-center space-x-2">
+<span class="w-6 h-6 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 font-bold"><i class="fa-solid fa-user text-[11px]"></i></span>
+<span class="text-gray-800 font-medium leading-tight">Link Demat account to start live trading</span>
+</div>
+<button class="upstox-purple-text font-semibold whitespace-nowrap ml-2">Connect</button>
+</div>
+​<!-- Index Ticker Bar -->
+<div class="bg-white border-b border-gray-100 px-4 py-2 flex items-center justify-between text-xs overflow-x-auto hide-scrollbar space-x-6">
+<div class="flex items-center space-x-2 cursor-pointer" onclick="openStockDetail('SENSEX', '74,314.59', '-21.86 (-0.03%)', 'BSE')">
+<div>
+<p class="text-[10px] text-gray-500 font-medium">SENSEX</p>
+<div class="flex items-center space-x-1.5">
+<span class="font-bold text-gray-900">74,314.59</span>
+<span class="text-red-500 font-medium">-21.86</span>
+</div>
+</div>
+</div>
+<div class="h-6 w-[1px] bg-gray-200"></div>
+<div class="flex items-center space-x-2 cursor-pointer" onclick="openStockDetail('NIFTY 50', '23,270.60', '+53.00 (+0.23%)', 'NSE')">
+<div>
+<p class="text-[10px] text-gray-500 font-medium">NIFTY 50</p>
+<div class="flex items-center space-x-1.5">
+<span class="font-bold text-gray-900">23,270.60</span>
+<span class="text-green-600 font-medium">+53.00</span>
+</div>
+</div>
+</div>
+</div>
+​<!-- Main Header & Search -->
+<div class="px-4 py-3 flex items-center justify-between bg-white sticky top-0 z-20 border-b border-gray-100">
+<div class="flex items-center space-x-3">
+<div class="w-9 h-9 rounded-xl upstox-purple flex items-center justify-center text-white font-bold tracking-tighter text-base shadow-sm">
+up<span class="text-[10px] text-purple-300">✓</span>
+</div>
+</div>
+<div class="flex-1 mx-3 relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+<i class="fa-solid fa-magnifying-glass text-sm"></i>
+</div>
+<input type="text" id="global-search" placeholder="Search F&O, Stocks, IPOs, MF..." class="w-full bg-gray-100 text-sm rounded-xl pl-9 pr-4 py-2 focus:outline-none focus:ring-1 focus:ring-purple-700 text-gray-800 placeholder-gray-400" onkeyup="filterStocks(this.value)">
+</div>
+<button onclick="openWalletModal()" class="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center text-gray-700 hover:bg-gray-50 transition relative">
+<i class="fa-solid fa-wallet text-sm"></i>
+<span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white"></span>
+</button>
+</div>
+​<!-- Navigation Tabs Bar -->
+<div class="bg-white border-b border-gray-200 px-4 flex space-x-6 overflow-x-auto hide-scrollbar sticky top-[61px] z-20">
+<button onclick="switchTab('ideas')" id="tab-btn-ideas" class="nav-tab py-3 text-sm font-medium text-gray-500 whitespace-nowrap transition">Ideas</button>
+<button onclick="switchTab('stocks')" id="tab-btn-stocks" class="nav-tab py-3 text-sm font-semibold upstox-purple-text border-b-2 border-[#532686] whitespace-nowrap transition">Stocks</button>
+<button onclick="switchTab('options')" id="tab-btn-options" class="nav-tab py-3 text-sm font-medium text-gray-500 whitespace-nowrap transition">Options</button>
+<button onclick="switchTab('mf')" id="tab-btn-mf" class="nav-tab py-3 text-sm font-medium text-gray-500 whitespace-nowrap transition">MF & SIP</button>
+<button onclick="switchTab('ipo')" id="tab-btn-ipo" class="nav-tab py-3 text-sm font-medium text-gray-500 whitespace-nowrap transition">IPOs <span class="text-[9px] bg-red-100 text-red-600 px-1 rounded font-bold">HOT</span></button>
+<button onclick="switchTab('usstocks')" id="tab-btn-usstocks" class="nav-tab py-3 text-sm font-medium text-gray-500 whitespace-nowrap transition">US Stocks</button>
+<button onclick="switchTab('commodities')" id="tab-btn-commodities" class="nav-tab py-3 text-sm font-medium text-gray-500 whitespace-nowrap transition">Commodities</button>
+<button onclick="switchTab('futures')" id="tab-btn-futures" class="nav-tab py-3 text-sm font-medium text-gray-500 whitespace-nowrap transition">Futures</button>
+<button onclick="switchTab('more')" id="tab-btn-more" class="nav-tab py-3 text-sm font-medium text-gray-500 whitespace-nowrap transition">More</button>
+</div>
+​<!-- Content Area Container -->
+<div class="flex-1 pb-24 overflow-y-auto">
+​<!-- 1. IDEAS TAB -->
+<div id="tab-content-ideas" class="tab-content hidden px-4 py-4 space-y-4">
+<div class="bg-gradient-to-r from-amber-50 via-amber-100 to-amber-200 rounded-2xl p-4 border border-amber-200">
+<p class="text-xs font-semibold text-amber-900 mb-1">Start investing in Gold at just ₹15</p>
+<div class="bg-white rounded-xl p-3 shadow-sm mt-3 flex items-center justify-between">
+<div class="flex items-center space-x-3">
+<div class="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center text-white font-bold"><i class="fa-solid fa-coins"></i></div>
+<div>
+<h4 class="text-sm font-bold text-gray-900">Digital Gold 99.9% Pure</h4>
+<p class="text-[11px] text-gray-500">100% Secure & Insured</p>
+</div>
+</div>
+<button onclick="openStockDetail('Digital Gold', '₹7,450 /g', '+0.45%', 'MCX')" class="upstox-purple text-white text-xs px-3 py-2 rounded-xl font-medium">Buy</button>
+</div>
+</div>
+<h3 class="text-sm font-bold text-gray-900">Expert Curated Ideas</h3>
+<div class="space-y-3">
+<div onclick="openStockDetail('RELIANCE', '2,980.40', '+1.20%', 'NSE')" class="bg-white p-4 rounded-2xl border border-gray-100 shadow-xs flex items-center justify-between cursor-pointer">
+<div>
+<span class="text-[10px] bg-purple-50 upstox-purple-text px-2 py-0.5 rounded font-semibold">Breakout Stock</span>
+<h4 class="text-sm font-bold text-gray-900 mt-1">Reliance Industries</h4>
+<p class="text-xs text-gray-400">Target: ₹3,200 | Stop Loss: ₹2,850</p>
+</div>
+<div class="text-right">
+<p class="text-sm font-bold text-gray-900">2,980.40</p>
+<p class="text-xs font-medium text-green-600">+1.20%</p>
+</div>
+</div>
+</div>
+</div>
+​<!-- 2. STOCKS TAB -->
+<div id="tab-content-stocks" class="tab-content px-4 py-4 space-y-4">
+<div class="flex space-x-2 overflow-x-auto hide-scrollbar pb-1">
+<button onclick="filterCategory('all')" class="px-3.5 py-1.5 rounded-full text-xs font-semibold upstox-purple text-white whitespace-nowrap">All Stocks</button>
+<button onclick="filterCategory('gainers')" class="px-3.5 py-1.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 whitespace-nowrap">Top Gainers</button>
+<button onclick="filterCategory('losers')" class="px-3.5 py-1.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 whitespace-nowrap">Top Losers</button>
+<button onclick="filterCategory('intraday')" class="px-3.5 py-1.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 whitespace-nowrap">Intraday Hot</button>
+</div>
+​<div id="stock-list-container" class="bg-white rounded-2xl border border-gray-100 shadow-sm divide-y divide-gray-100">
+<!-- Dynamic Stock Cards populated via JS -->
+</div>
+</div>
+​<!-- 3. OPTIONS TAB -->
+<div id="tab-content-options" class="tab-content hidden px-4 py-4 space-y-4">
+<div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm flex items-center justify-between cursor-pointer" onclick="alert('Opening Live Option Chain Matrix...')">
+<div class="flex items-center space-x-3">
+<div class="w-10 h-10 rounded-xl upstox-light-purple upstox-purple-text flex items-center justify-center font-bold text-lg"><i class="fa-solid fa-chart-line"></i></div>
+<div>
+<h4 class="text-sm font-bold text-gray-900">Advanced Option Chain</h4>
+<p class="text-xs text-gray-500">PCR, Open Interest, Strike Analysis</p>
+</div>
+</div>
+<i class="fa-solid fa-chevron-right text-xs text-gray-400"></i>
+</div>
+<div class="grid grid-cols-2 gap-3">
+<div onclick="openStockDetail('NIFTY 23300 CE', '142.50', '+18.4%', 'NFO')" class="bg-white p-3.5 rounded-2xl border border-gray-100 shadow-xs cursor-pointer">
+<span class="text-[10px] text-gray-400">NIFTY 22 SEP</span>
+<h5 class="text-xs font-bold text-gray-900 mt-1">23300 CALL</h5>
+<p class="text-sm font-bold text-gray-900 mt-2">142.50 <span class="text-xs text-green-600">(+18.4%)</span></p>
+</div>
+<div onclick="openStockDetail('NIFTY 23200 PE', '98.20', '-12.3%', 'NFO')" class="bg-white p-3.5 rounded-2xl border border-gray-100 shadow-xs cursor-pointer">
+<span class="text-[10px] text-gray-400">NIFTY 22 SEP</span>
+<h5 class="text-xs font-bold text-gray-900 mt-1">23200 PUT</h5>
+<p class="text-sm font-bold text-gray-900 mt-2">98.20 <span class="text-xs text-red-500">(-12.3%)</span></p>
+</div>
+</div>
+</div>
+​<!-- 4. MF & SIP CALCULATOR TAB -->
+<div id="tab-content-mf" class="tab-content hidden px-4 py-4 space-y-4">
+<!-- SIP Calculator Section -->
+<div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm space-y-4">
+<div class="flex justify-between items-center">
+<h3 class="text-sm font-bold text-gray-950 flex items-center"><i class="fa-solid fa-calculator text-purple-600 mr-2"></i> SIP Wealth Calculator</h3>
+<span class="text-[10px] bg-green-100 text-green-700 font-bold px-2 py-0.5 rounded">15% avg return</span>
+</div>
+<div>
+<div class="flex justify-between text-xs font-semibold mb-1">
+<span class="text-gray-500">Monthly Investment</span>
+<span id="sip-amount-val" class="text-purple-700">₹ 10,000</span>
+</div>
+<input type="range" id="sip-amount" min="500" max="100000" step="500" value="10000" class="w-full accent-purple-700 cursor-pointer" oninput="calculateSIP()">
+</div>
+<div>
+<div class="flex justify-between text-xs font-semibold mb-1">
+<span class="text-gray-500">Time Period (Years)</span>
+<span id="sip-years-val" class="text-purple-700">10 Years</span>
+</div>
+<input type="range" id="sip-years" min="1" max="30" step="1" value="10" class="w-full accent-purple-700 cursor-pointer" oninput="calculateSIP()">
+</div>
+<div class="bg-purple-50 p-3.5 rounded-xl flex justify-between items-center">
+<div>
+<p class="text-[11px] text-gray-600">Invested: <b id="sip-invested" class="text-gray-900">₹ 12,00,000</b></p>
+<p class="text-[11px] text-gray-600 mt-0.5">Est. Returns: <b id="sip-returns" class="text-green-600">₹ 15,84,720</b></p>
+</div>
+<div class="text-right">
+<p class="text-[10px] text-gray-500 uppercase font-bold">Total Value</p>
+<p id="sip-total" class="text-base font-bold upstox-purple-text">₹ 27,84,720</p>
+</div>
+</div>
+</div>
+​<!-- Top Mutual Funds -->
+<h3 class="text-sm font-bold text-gray-900">Top Rated Index Funds</h3>
+<div class="bg-white rounded-2xl border border-gray-100 divide-y divide-gray-100 shadow-sm">
+<div onclick="openStockDetail('Nippon India Small Cap', '₹168.40', '+19.8% 3Y', 'MF')" class="p-3.5 flex items-center justify-between cursor-pointer">
+<div class="flex items-center space-x-3">
+<div class="w-9 h-9 rounded-xl bg-red-100 text-red-600 flex items-center justify-center font-bold text-xs">NP</div>
+<div>
+<h4 class="text-xs font-bold text-gray-900">Nippon India Small Cap Fund</h4>
+<p class="text-[10px] text-gray-400">High Risk • 3Y CAGR 28.4%</p>
+</div>
+</div>
+<button class="upstox-purple text-white text-xs px-3 py-1.5 rounded-xl font-medium">Invest SIP</button>
+</div>
+</div>
+</div>
+​<!-- 5. IPO TAB -->
+<div id="tab-content-ipo" class="tab-content hidden px-4 py-4 space-y-4">
+<h3 class="text-sm font-bold text-gray-900">Active & Upcoming IPOs</h3>
+<div class="space-y-3">
+<div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm space-y-3">
+<div class="flex justify-between items-start">
+<div class="flex items-center space-x-3">
+<div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold">TC</div>
+<div>
+<h4 class="text-sm font-bold text-gray-900">TechCorp Solutions Ltd.</h4>
+<p class="text-[10px] text-gray-400">Closes on 20 Sep 2026</p>
+</div>
+</div>
+<span class="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded-full">OPEN NOW</span>
+</div>
+<div class="grid grid-cols-3 gap-2 bg-gray-50 p-2.5 rounded-xl text-center text-xs">
+<div>
+<span class="text-[10px] text-gray-400">Price Band</span>
+<p class="font-bold text-gray-800">₹540 - ₹570</p>
+</div>
+<div>
+<span class="text-[10px] text-gray-400">Lot Size</span>
+<p class="font-bold text-gray-800">25 Shares</p>
+</div>
+<div>
+<span class="text-[10px] text-gray-400">Min Investment</span>
+<p class="font-bold text-gray-800">₹14,250</p>
+</div>
+</div>
+<button onclick="openIPOModal('TechCorp Solutions', '570', '14250')" class="w-full py-2.5 upstox-purple text-white font-bold rounded-xl text-xs shadow-md">Apply for IPO</button>
+</div>
+</div>
+</div>
+​<!-- 6. US STOCKS TAB -->
+<div id="tab-content-usstocks" class="tab-content hidden px-4 py-4 space-y-4">
+<div class="bg-gradient-to-r from-blue-900 to-indigo-900 rounded-2xl p-4 text-white">
+<h3 class="text-base font-bold">Invest in US Giants</h3>
+<p class="text-xs text-blue-200 mt-1">Apple, Tesla, Google & Microsoft starting at $1.</p>
+</div>
+<div class="bg-white rounded-2xl border border-gray-100 p-4 space-y-3 shadow-sm">
+<div onclick="openStockDetail('AAPL (Apple)', '$224.50', '+1.84%', 'NASDAQ')" class="flex items-center justify-between cursor-pointer">
+<div class="flex items-center space-x-3">
+<div class="w-10 h-10 rounded-xl bg-gray-900 text-white flex items-center justify-center font-bold"><i class="fa-brands fa-apple"></i></div>
+<div>
+<h4 class="text-sm font-bold text-gray-900">Apple Inc</h4>
+<p class="text-xs text-gray-400">NASDAQ</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-sm font-bold text-gray-900">$224.50</p>
+<p class="text-xs text-green-600 font-medium">+1.84%</p>
+</div>
+</div>
+</div>
+</div>
+​<!-- 7. COMMODITIES TAB -->
+<div id="tab-content-commodities" class="tab-content hidden px-4 py-4 space-y-4">
+<h3 class="text-sm font-bold text-gray-900">MCX Commodities & Bullion</h3>
+<div class="grid grid-cols-2 gap-3">
+<div onclick="openStockDetail('GOLD 24K', '74,850', '+0.62%', 'MCX')" class="bg-white p-3.5 rounded-2xl border border-gray-100 shadow-sm cursor-pointer">
+<div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center font-bold mb-2"><i class="fa-solid fa-coins"></i></div>
+<h5 class="text-xs font-bold text-gray-900">GOLD 10g</h5>
+<p class="text-sm font-bold text-gray-900 mt-1">₹74,850 <span class="text-xs text-green-600">(+0.62%)</span></p>
+</div>
+<div onclick="openStockDetail('SILVER', '89,400', '-0.15%', 'MCX')" class="bg-white p-3.5 rounded-2xl border border-gray-100 shadow-sm cursor-pointer">
+<div class="w-8 h-8 rounded-lg bg-gray-200 text-gray-700 flex items-center justify-center font-bold mb-2"><i class="fa-solid fa-ring"></i></div>
+<h5 class="text-xs font-bold text-gray-900">SILVER 1kg</h5>
+<p class="text-sm font-bold text-gray-900 mt-1">₹89,400 <span class="text-xs text-red-500">(-0.15%)</span></p>
+</div>
+</div>
+</div>
+​<!-- 8. FUTURES TAB -->
+<div id="tab-content-futures" class="tab-content hidden px-4 py-4 space-y-4">
+<h3 class="text-sm font-bold text-gray-900">Active Futures Contracts</h3>
+<div class="bg-white rounded-2xl border border-gray-100 divide-y divide-gray-100 shadow-sm">
+<div onclick="openStockDetail('RELIANCE FUT', '2,992.00', '+1.10%', 'NFO')" class="p-4 flex items-center justify-between cursor-pointer">
+<div>
+<span class="text-[10px] text-gray-400">26 SEP EXPIRY</span>
+<h4 class="text-sm font-bold text-gray-900 mt-0.5">RELIANCE 26SEP FUT</h4>
+</div>
+<div class="text-right">
+<p class="text-sm font-bold text-gray-900">2,992.00</p>
+<p class="text-xs text-green-600 font-medium">+1.10%</p>
+</div>
+</div>
+</div>
+</div>
+​<!-- 9. MORE TAB -->
+<div id="tab-content-more" class="tab-content hidden px-4 py-4 space-y-4">
+<h3 class="text-xs font-bold uppercase tracking-wider text-gray-400">Investment Services</h3>
+<div class="grid grid-cols-4 gap-3 text-center">
+<div onclick="alert('Fixed Deposits starting at 8.5% interest')" class="bg-white p-3 rounded-2xl border border-gray-100 shadow-xs cursor-pointer">
+<i class="fa-solid fa-piggy-bank text-purple-700 text-lg mb-1"></i>
+<p class="text-[11px] font-medium text-gray-800">Fixed Deposits</p>
+</div>
+<div onclick="alert('Bonds & Govt Securities portal')" class="bg-white p-3 rounded-2xl border border-gray-100 shadow-xs cursor-pointer">
+<i class="fa-solid fa-file-invoice-dollar text-purple-700 text-lg mb-1"></i>
+<p class="text-[11px] font-medium text-gray-800">Bonds</p>
+</div>
+<div onclick="alert('Instant Personal Loan up to ₹5 Lakhs')" class="bg-white p-3 rounded-2xl border border-gray-100 shadow-xs cursor-pointer">
+<i class="fa-solid fa-indian-rupee-sign text-purple-700 text-lg mb-1"></i>
+<p class="text-[11px] font-medium text-gray-800">Loans</p>
+</div>
+<div onclick="alert('Term & Health Insurance plans')" class="bg-white p-3 rounded-2xl border border-gray-100 shadow-xs cursor-pointer">
+<i class="fa-solid fa-shield-heart text-purple-700 text-lg mb-1"></i>
+<p class="text-[11px] font-medium text-gray-800">Insurance</p>
+</div>
+</div>
+</div>
+​</div>
+​<!-- Bottom Navigation Bar -->
+<div class="absolute bottom-0 inset-x-0 bg-white border-t border-gray-200 py-2 px-4 flex justify-between items-center z-30 shadow-lg">
+<button onclick="switchBottomTab('home')" id="b-tab-home" class="flex flex-col items-center upstox-purple-text">
+<i class="fa-solid fa-house text-lg"></i>
+<span class="text-[10px] font-semibold mt-1">Home</span>
+</button>
+<button onclick="switchBottomTab('mylists')" id="b-tab-mylists" class="flex flex-col items-center text-gray-400 hover:text-gray-600">
+<i class="fa-solid fa-list-ul text-lg"></i>
+<span class="text-[10px] font-medium mt-1">My Lists</span>
+</button>
+<button onclick="switchBottomTab('orders')" id="b-tab-orders" class="flex flex-col items-center text-gray-400 hover:text-gray-600">
+<i class="fa-solid fa-arrow-right-arrow-left text-lg"></i>
+<span class="text-[10px] font-medium mt-1">Orders</span>
+</button>
+<button onclick="switchBottomTab('positions')" id="b-tab-positions" class="flex flex-col items-center text-gray-400 hover:text-gray-600">
+<i class="fa-solid fa-chart-line text-lg"></i>
+<span class="text-[10px] font-medium mt-1">Positions</span>
+</button>
+<button onclick="switchBottomTab('holdings')" id="b-tab-holdings" class="flex flex-col items-center text-gray-400 hover:text-gray-600">
+<i class="fa-solid fa-briefcase text-lg"></i>
+<span class="text-[10px] font-medium mt-1">Holdings</span>
+</button>
+</div>
+​<!-- Stock Trading & Chart Modal -->
+<div id="stock-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex flex-col justify-end backdrop-blur-xs">
+<div class="bg-white rounded-t-3xl p-6 space-y-5 animate-slide-up max-h-[90vh] overflow-y-auto">
+<div class="flex items-center justify-between pb-3 border-b border-gray-100">
+<div>
+<h3 id="modal-stock-name" class="text-lg font-bold text-gray-900">TEGA</h3>
+<p class="text-xs text-gray-500"><span id="modal-stock-exchange">NSE</span> • Live Market</p>
+</div>
+<button onclick="closeStockModal()" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600"><i class="fa-solid fa-xmark"></i></button>
+</div>
+<div class="flex items-center justify-between bg-gray-50 p-4 rounded-2xl">
+<div>
+<p id="modal-stock-price" class="text-2xl font-bold text-gray-900">1,920.00</p>
+<p id="modal-stock-change" class="text-xs font-semibold text-green-600">+202.90 (+11.82%)</p>
+</div>
+<div class="flex space-x-1 bg-white p-1 rounded-xl shadow-xs border border-gray-200">
+<button onclick="setChartType('line')" class="px-2.5 py-1 text-xs font-bold upstox-purple text-white rounded-lg">Line</button>
+<button onclick="setChartType('candlestick')" class="px-2.5 py-1 text-xs text-gray-600 font-medium">Candle</button>
+</div>
+</div>
+<div class="h-36 bg-purple-50/50 rounded-2xl border border-purple-100 flex items-end p-3 space-x-1.5" id="chart-container">
+<div class="flex-1 bg-purple-300 rounded-t-sm h-[40%]"></div>
+<div class="flex-1 bg-purple-400 rounded-t-sm h-[60%]"></div>
+<div class="flex-1 bg-purple-500 rounded-t-sm h-[80%]"></div>
+<div class="flex-1 bg-purple-600 rounded-t-sm h-[95%]"></div>
+</div>
+<div class="grid grid-cols-2 gap-4 pt-2">
+<button onclick="executeOrder('BUY')" class="w-full py-3.5 bg-green-600 hover:bg-green-700 text-white font-bold rounded-2xl shadow-md transition text-sm">BUY</button>
+<button onclick="executeOrder('SELL')" class="w-full py-3.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-2xl shadow-md transition text-sm">SELL</button>
+</div>
+</div>
+</div>
+​<!-- IPO Bidding Modal -->
+<div id="ipo-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-xs">
+<div class="bg-white rounded-3xl p-6 w-full max-w-sm space-y-4 shadow-2xl">
+<div class="flex justify-between items-center">
+<h3 id="ipo-modal-title" class="text-base font-bold text-gray-900">Apply for IPO</h3>
+<button onclick="closeIPOModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+</div>
+<div>
+<label class="text-[11px] font-bold text-gray-700 uppercase">Enter UPI ID for Mandate</label>
+<input type="text" id="upi-id" placeholder="username@oksbi" class="w-full mt-1 border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-700">
+</div>
+<button onclick="submitIPO()" class="w-full py-3 upstox-purple text-white font-bold rounded-xl text-sm shadow-md">Confirm & Send Mandate</button>
+</div>
+</div>
+​<!-- Demat Account OTP Modal -->
+<div id="demat-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-xs">
+<div class="bg-white rounded-3xl p-6 w-full max-w-sm space-y-4 shadow-2xl">
+<div class="flex justify-between items-center">
+<h3 class="text-base font-bold text-gray-900">Link Demat Account</h3>
+<button onclick="closeDematModal()" class="text-gray-400"><i class="fa-solid fa-xmark text-lg"></i></button>
+</div>
+<p class="text-xs text-gray-500">Enter mobile number linked with your broker account.</p>
+<div>
+<input type="tel" maxlength="10" placeholder="Mobile Number" class="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-700">
+</div>
+<button onclick="verifyOTP()" class="w-full py-3 upstox-purple text-white font-bold rounded-xl text-sm shadow-md">Get OTP</button>
+</div>
+</div>
+​<!-- Wallet Modal -->
+<div id="wallet-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex flex-col justify-end backdrop-blur-xs">
+<div class="bg-white rounded-t-3xl p-6 space-y-4">
+<div class="flex justify-between items-center pb-3 border-b border-gray-100">
+<h3 class="text-base font-bold text-gray-900">Funds & Margin</h3>
+<button onclick="closeWalletModal()" class="text-gray-400"><i class="fa-solid fa-xmark text-lg"></i></button>
+</div>
+<div class="bg-purple-900 text-white p-4 rounded-2xl shadow-md">
+<p class="text-xs text-purple-200">Available Trading Balance</p>
+<h2 class="text-2xl font-bold mt-1">₹ 24,850.00</h2>
+</div>
+<div class="flex space-x-3 pt-2">
+<button onclick="alert('Funds added successfully via UPI!')" class="flex-1 py-3 upstox-purple text-white font-bold rounded-xl text-xs">Add Funds</button>
+<button onclick="alert('Withdrawal request processed.')" class="flex-1 py-3 bg-gray-100 text-gray-800 font-bold rounded-xl text-xs">Withdraw</button>
+</div>
+</div>
+</div>
+​<!-- JavaScript Application Logic -->
+<script>
+const stocksData = [
+{ name: 'TEGA', price: '1,920.00', change: '+202.90 (+11.82%)', ex: 'NSE', category: 'gainers', col: 'cyan' },
+{ name: 'HBLENGINE', price: '756.75', change: '+52.10 (7.39%)', ex: 'NSE', category: 'gainers', col: 'pink' },
+{ name: 'SYRMA', price: '1,617.70', change: '+106.50 (7.05%)', ex: 'NSE', category: 'gainers', col: 'blue' },
+{ name: 'NIACL', price: '197.05', change: '+12.86 (6.98%)', ex: 'NSE', category: 'gainers', col: 'indigo' },
+{ name: 'YESBANK', price: '24.15', change: '-1.25 (-4.92%)', ex: 'NSE', category: 'losers', col: 'amber' },
+{ name: 'VODAFONE', price: '10.20', change: '-0.65 (-5.98%)', ex: 'NSE', category: 'losers', col: 'red' },
+{ name: 'TATAMOTORS', price: '984.50', change: '+14.20 (+1.46%)', ex: 'NSE', category: 'intraday', col: 'blue' },
+{ name: 'RELIANCE', price: '2,980.40', change: '+35.40 (+1.20%)', ex: 'NSE', category: 'intraday', col: 'purple' }
+];
+​function renderStocks(filter = 'all') {
+const container = document.getElementById('stock-list-container');
+let html = '';
+const filtered = filter === 'all' ? stocksData : stocksData.filter(s => s.category === filter);
+​filtered.forEach(stock => {
+const isGreen = stock.change.includes('+');
+html += <div onclick="openStockDetail('${stock.name}', '${stock.price}', '${stock.change}', '${stock.ex}')" class="p-3.5 flex items-center justify-between cursor-pointer hover:bg-gray-50"> <div class="flex items-center space-x-3"> <div class="w-10 h-10 rounded-xl bg-${stock.col}-100 flex items-center justify-center text-${stock.col}-700 font-bold text-xs">${stock.name.substring(0,2)}</div> <div> <h4 class="text-sm font-bold text-gray-900">${stock.name}</h4> <p class="text-xs text-gray-500">${stock.ex}</p> </div> </div> <div class="text-right"> <p class="text-sm font-bold text-gray-900">${stock.price}</p> <p class="text-xs font-medium ${isGreen ? 'text-green-600' : 'text-red-500'}">${stock.change}</p> </div> </div>;
+});
+container.innerHTML = html;
+}
+​function filterCategory(cat) {
+document.querySelectorAll('#tab-content-stocks button').forEach(b => {
+b.classList.remove('upstox-purple', 'text-white');
+b.classList.add('bg-gray-100', 'text-gray-600');
+});
+event.target.classList.remove('bg-gray-100', 'text-gray-600');
+event.target.classList.add('upstox-purple', 'text-white');
+renderStocks(cat);
+}
+​// SIP Calculator Logic
+function calculateSIP() {
+const P = parseFloat(document.getElementById('sip-amount').value);
+const n = parseInt(document.getElementById('sip-years').value) * 12;
+const i = 0.15 / 12; // 15% annual return
+​document.getElementById('sip-amount-val').innerText = '₹ ' + P.toLocaleString('en-IN');
+document.getElementById('sip-years-val').innerText = document.getElementById('sip-years').value + ' Years';
+​const invested = P * n;
+const total = P * (((Math.pow(1 + i, n) - 1) / i) * (1 + i));
+const returns = total - invested;
+​document.getElementById('sip-invested').innerText = '₹ ' + Math.round(invested).toLocaleString('en-IN');
+document.getElementById('sip-returns').innerText = '₹ ' + Math.round(returns).toLocaleString('en-IN');
+document.getElementById('sip-total').innerText = '₹ ' + Math.round(total).toLocaleString('en-IN');
+}
+​// Tabs
+function switchTab(tabId) {
+document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+document.querySelectorAll('.nav-tab').forEach(el => {
+el.classList.remove('upstox-purple-text', 'border-b-2', 'border-[#532686]', 'font-semibold');
+el.classList.add('text-gray-500', 'font-medium');
+});
+document.getElementById('tab-content-' + tabId).classList.remove('hidden');
+const activeBtn = document.getElementById('tab-btn-' + tabId);
+activeBtn.classList.remove('text-gray-500', 'font-medium');
+activeBtn.classList.add('upstox-purple-text', 'border-b-2', 'border-[#532686]', 'font-semibold');
+if(tabId === 'mf') calculateSIP();
+}
+​function switchBottomTab(tab) {
+document.querySelectorAll('.absolute.bottom-0 button').forEach(el => {
+el.classList.remove('upstox-purple-text', 'font-semibold');
+el.classList.add('text-gray-400');
+});
+const btn = document.getElementById('b-tab-' + tab);
+btn.classList.remove('text-gray-400');
+btn.classList.add('upstox-purple-text', 'font-semibold');
+if(tab !== 'home') alert("Switched to " + tab.toUpperCase() + " portfolio view.");
+}
+​// Modals
+function openStockDetail(name, price, change, exchange) {
+document.getElementById('modal-stock-name').innerText = name;
+document.getElementById('modal-stock-price').innerText = price;
+document.getElementById('modal-stock-change').innerText = change;
+document.getElementById('modal-stock-exchange').innerText = exchange;
+document.getElementById('stock-modal').classList.remove('hidden');
+}
+function closeStockModal() { document.getElementById('stock-modal').classList.add('hidden'); }
+function executeOrder(type) { alert(type + " order placed successfully!"); closeStockModal(); }
+​function openIPOModal(name, price, min) {
+document.getElementById('ipo-modal-title').innerText = "Apply for " + name;
+document.getElementById('ipo-modal').classList.remove('hidden');
+}
+function closeIPOModal() { document.getElementById('ipo-modal').classList.add('hidden'); }
+function submitIPO() {
+const upi = document.getElementById('upi-id').value;
+if(!upi) { alert("Please enter a valid UPI ID"); return; }
+alert("IPO Bid placed successfully! UPI Mandate request sent to " + upi);
+closeIPOModal();
+}
+​function openDematModal() { document.getElementById('demat-modal').classList.remove('hidden'); }
+function closeDematModal() { document.getElementById('demat-modal').classList.add('hidden'); }
+function verifyOTP() { alert("OTP verified! Demat account linking initiated."); closeDematModal(); }
+​function openWalletModal() { document.getElementById('wallet-modal').classList.remove('hidden'); }
+function closeWalletModal() { document.getElementById('wallet-modal').classList.add('hidden'); }
+​function setChartType(type) {
+alert("Switched chart view to " + type.toUpperCase());
+}
+​function filterStocks(query) {
+const filtered = stocksData.filter(s => s.name.toLowerCase().includes(query.toLowerCase()));
+const container = document.getElementById('stock-list-container');
+let html = '';
+filtered.forEach(stock => {
+html += <div onclick="openStockDetail('${stock.name}', '${stock.price}', '${stock.change}', '${stock.ex}')" class="p-3.5 flex items-center justify-between cursor-pointer hover:bg-gray-50"> <div class="flex items-center space-x-3"> <div class="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center text-purple-700 font-bold text-xs">${stock.name.substring(0,2)}</div> <div> <h4 class="text-sm font-bold text-gray-900">${stock.name}</h4> <p class="text-xs text-gray-500">${stock.ex}</p> </div> </div> <div class="text-right"> <p class="text-sm font-bold text-gray-900">${stock.price}</p> <p class="text-xs font-medium text-green-600">${stock.change}</p> </div> </div>;
+});
+container.innerHTML = html || '<p class="p-4 text-center text-xs text-gray-400">No stocks found</p>';
+}
+​// Initialize default view
+renderStocks('all');
+</script>
+</body>
+</html>
